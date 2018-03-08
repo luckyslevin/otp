@@ -30,6 +30,7 @@ repositories {
 }
 
 dependencies {
+    compile group: 'commons-codec', name: 'commons-codec', version: '1.10'
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
 }
 

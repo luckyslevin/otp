@@ -8,4 +8,7 @@ fun main(args : Array<String>) {
     val d = OTPAlgorithm.getInstanceOptionally("MD5")
     d.map { x -> println(x.value) }
     println(OTPAlgorithm.MD5)
+
+    val key = OTPKey.random(a)
+    println(key)
 }
