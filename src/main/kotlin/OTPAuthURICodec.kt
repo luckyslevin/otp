@@ -1,3 +1,4 @@
+import java.lang.reflect.Array
 import java.net.URI
 import java.util.Optional
 
@@ -48,26 +49,16 @@ object OTPAuthURICodec {
     fun decode(uri: URI): Optional<Decoded> {
         val scheme = uri.scheme.toLowerCase()
         val protocal = uri.host
-//        val params = uri.query.split('&').map { it.split('=', 2)}
-        return Optional.of(Decoded(protocol="", account="", otpkey="", issuer="", params=""))
+        val params: Map<String, String> = uri.query.split('&').map { it.split('=', limit=2)}.mapNotNull { r ->
+            Pair(r?.getOrElse(0, {""}), r?.getOrElse(1, {""}))
+        }.toMap()
+        val pair: Pair<String, Optional<String>> = uri.path.substring(1).split(":", limit=2)
+                .let { r ->
+                    Pair(r.getOrElse(1, {""}), Optional.ofNullable(r.getOrNull(0)))
+                }
+        if (scheme == "otpauth" && !params.keys.find { it == "secret" }.isNullOrEmpty()) {
+            val otpkey = OTPKey.fromBase32(params.getValue("secret"))
+            return Optional.of(Decoded(protocal, pair.first, otpkey, pair.second, params))
+        } else return Optional.empty()
     }
-//        val scheme = uri.getScheme.toLowerCase
-//        val protocol = uri.getHost
-//        val params = uri.getQuery.split('&').map(_.split("=", 2)).collect {
-//            case Array(key, value) => (key, value)
-//            case Array(key) => (key, "")
-//        }.toMap
-//        val (account, issuer) = {
-//            uri.getPath.substring(1).split(":", 2) match {
-//                case Array(issuer, account) => (account, Some(issuer))
-//                case Array(account) => (account, None)
-//            }
-//        }
-//        if (scheme == "otpauth" && params.keys.exists(_ == "secret")) {
-//            val otpkey = OTPKey.fromBase32(params("secret"))
-//            Some(Decoded(protocol, account, otpkey, issuer, params))
-//        } else None
-
-
-
 }

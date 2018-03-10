@@ -1,3 +1,4 @@
+import java.net.URI
 import java.util.Optional
 
 /**
@@ -64,5 +65,53 @@ class HOTP(
      */
     fun validate(counter: Long, lookAheadWindow: Int, code: String): Optional<Long> =
         validateWithCounter(algorithm, digits, otpkey, counter, lookAheadWindow, digitsToInt(code))
+
+    /**
+     * Returns a URI instance with HOTP configurations.
+     *
+     * @see [[https://github.com/google/google-authenticator/wiki/Key-Uri-Format Key URI Format]]
+     *
+     * @param account the account name of the subject.
+     * @param issuer the service provider name.
+     * @param params the additional parameters.
+     */
+    fun toURI(
+        account: String,
+        issuer: Optional<String> = Optional.empty(),
+        params: Map<String, String> = emptyMap()): URI {
+        return OTPAuthURICodec.encode(
+            protocol(),
+            account,
+            otpkey,
+            issuer,
+            params.plus(mapOf("digits" to digits.toString(), "algorithm" to algorithm.name)))
+    }
+
+    override fun toString(): String = "HOTP(${otpkey.toBase32()}, ${algorithm.name}, $digits)"
+
+    override fun hashCode() = 41 * (41 * otpkey.hashCode() + algorithm.hashCode()) + digits.hashCode()
+
+    companion object {
+        /**
+         * Java API: Creates new [[HOTP]] instance.
+         */
+        fun getInstance(algorithm: OTPAlgorithm, digits: Int, otpkey: OTPKey): HOTP =
+                HOTP(algorithm, digits, otpkey)
+
+        /**
+         * Creates new [[HOTP]] instance from `otpauth` URI.
+         *
+         * @see [[https://github.com/google/google-authenticator/wiki/Key-Uri-Format Key URI Format]]
+         */
+        fun fromURI(uri: URI) {
+            OTPAuthURICodec.decode(uri).map { decoded ->
+                val algo = decoded.params.get("algorithm")
+                getInstance(algo?.let { OTPAlgorithm.getInstanceOptionally(it)
+                        .orElse(OTPAlgorithm.getSHA1()) } ?: OTPAlgorithm.getSHA1(),
+                    Optional.ofNullable(decoded.params.get("digits")).map { it.toInt() }.orElse(6),
+                    decoded.otpkey)
+            }.orElseThrow { IllegalArgumentException("Illegal URI given.") }
+        }
+    }
 
 }

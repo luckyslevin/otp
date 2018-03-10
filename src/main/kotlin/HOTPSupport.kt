@@ -61,15 +61,14 @@ interface HOTPSupport {
      * Truncates the HMAC code value to extract an HOTP value.
      */
     fun truncate(hmac: ByteArray, digits: Int): Int {
-        val offset: Int = (hmac.get(hmac.size - 1) and 0x0f).toInt()
+        val offset: Int = (hmac.get(hmac.size - 1).toInt() and 0x0f)
         val truncatedHash: Long =
-            (((hmac.get(offset) and 0x7f).toInt() shl 24).toByte() or
-            ((hmac.get(offset + 1) and 0xff.toByte()).toInt() shl 16).toByte() or
-            ((hmac.get(offset + 2) and 0xff.toByte()).toInt() shl 8).toByte() or
-            (hmac.get(offset + 3) and 0xff.toByte())).toLong()
-        return (truncatedHash % 10.0.pow(digits.toDouble())).toInt()
+                ((((hmac.get(offset).toInt() and 0x7f) shl 24)) or
+                ((((hmac.get(offset + 1).toInt() and 0xff) shl 16)) or
+                ((hmac.get(offset + 2).toInt() and 0xff) shl 8)) or
+                (hmac.get(offset + 3).toInt() and 0xff)).toLong()
+        return (truncatedHash % 10.toDouble().pow(digits.toDouble())).toInt()
     }
-
     /**
      * Calculates a HMAC value.
      * This method uses the SunJCE provider to provide the HMAC algorithm.
