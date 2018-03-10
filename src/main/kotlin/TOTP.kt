@@ -205,7 +205,6 @@ class TOTP(
         fun fromURI(uri: URI): TOTP {
             return OTPAuthURICodec.decode(uri).map { decoded ->
                 val algo = decoded.params.get("algorithm")
-                println(algo)
                 getInstance(algo?.let { OTPAlgorithm.getInstanceOptionally(it)
                         .orElse(OTPAlgorithm.getSHA1()) } ?: OTPAlgorithm.getSHA1(),
                         Optional.ofNullable(decoded.params.get("digits")).map { it.toInt() }.orElse(6),
