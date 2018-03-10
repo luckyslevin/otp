@@ -40,7 +40,8 @@ object OTPAuthURICodec {
         val p: Set<Pair<String, String>> = params.map { it.toPair() }.toSet()
                 .plus(setOf(Pair("secret", otpkey.toBase32())))
                 .plus(issuer.map { setOf(Pair("issuer", it))}.orElse(emptySet()))
-        return URI("otpauth", protocol, label, p.map { p -> "${p.first}=${p.second}"}.joinToString { "&" }, null)
+        val query = p.map { p -> "${p.first}=${p.second}"}.joinToString("&")
+        return URI("otpauth", protocol, label, query, null)
     }
 
     /**

@@ -225,7 +225,7 @@ interface TOTPSupport: HOTPSupport {
         otpkey: OTPKey,
         instantTimestamp: Long,
         window: Int,
-    code: Int): Optional<Long> =
+        code: Int): Optional<Long> =
         validateWithCounter(
                 algorithm,
                 digits,

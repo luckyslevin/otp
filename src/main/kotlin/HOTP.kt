@@ -79,12 +79,13 @@ class HOTP(
         account: String,
         issuer: Optional<String> = Optional.empty(),
         params: Map<String, String> = emptyMap()): URI {
+        val p: Map<String, String> = mapOf("digits" to digits.toString(), "algorithm" to algorithm.name)
         return OTPAuthURICodec.encode(
             protocol(),
             account,
             otpkey,
             issuer,
-            params.plus(mapOf("digits" to digits.toString(), "algorithm" to algorithm.name)))
+            params.plus(p))
     }
 
     override fun toString(): String = "HOTP(${otpkey.toBase32()}, ${algorithm.name}, $digits)"
@@ -103,14 +104,14 @@ class HOTP(
          *
          * @see [[https://github.com/google/google-authenticator/wiki/Key-Uri-Format Key URI Format]]
          */
-        fun fromURI(uri: URI) {
-            OTPAuthURICodec.decode(uri).map { decoded ->
+        fun fromURI(uri: URI): HOTP {
+            return OTPAuthURICodec.decode(uri).map { decoded ->
                 val algo = decoded.params.get("algorithm")
                 getInstance(algo?.let { OTPAlgorithm.getInstanceOptionally(it)
                         .orElse(OTPAlgorithm.getSHA1()) } ?: OTPAlgorithm.getSHA1(),
                     Optional.ofNullable(decoded.params.get("digits")).map { it.toInt() }.orElse(6),
                     decoded.otpkey)
-            }.orElseThrow { IllegalArgumentException("Illegal URI given.") }
+            }.orElseThrow { throw IllegalArgumentException("Illegal URI given.") }
         }
     }
 

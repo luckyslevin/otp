@@ -170,13 +170,8 @@ class TOTP(
         "TOTP(${otpkey.toBase32()}, ${algorithm.name}, $digits, $period, $initialTimestamp)"
 
     override fun hashCode(): Int {
-        return 41 * (
-                41 * (
-                        41 * (
-                                41 * otpkey.hashCode() + algorithm.hashCode()) +
-                                digits.hashCode()) +
-                        period.hashCode()) +
-                initialTimestamp.hashCode()
+        return 41 * (41 * (41 * (41 * otpkey.hashCode() + algorithm.hashCode()) +
+                digits.hashCode()) + period.hashCode()) + initialTimestamp.hashCode()
     }
 
     companion object {
@@ -207,15 +202,16 @@ class TOTP(
          * @see [[https://github.com/google/google-authenticator/wiki/Key-Uri-Format Key URI Format]]
          */
 
-        fun fromURI(uri: URI) {
-            OTPAuthURICodec.decode(uri).map { decoded ->
+        fun fromURI(uri: URI): TOTP {
+            return OTPAuthURICodec.decode(uri).map { decoded ->
                 val algo = decoded.params.get("algorithm")
+                println(algo)
                 getInstance(algo?.let { OTPAlgorithm.getInstanceOptionally(it)
                         .orElse(OTPAlgorithm.getSHA1()) } ?: OTPAlgorithm.getSHA1(),
                         Optional.ofNullable(decoded.params.get("digits")).map { it.toInt() }.orElse(6),
-                        Optional.ofNullable(decoded.params.get("digits")).map { it.toInt() }.orElse(6),
+                        Optional.ofNullable(decoded.params.get("period")).map { it.toInt() }.orElse(6),
                         decoded.otpkey)
-            }.orElseThrow { IllegalArgumentException("Illegal URI given.") }
+            }.orElseThrow { throw IllegalArgumentException("Illegal URI given.") }
         }
     }
 }

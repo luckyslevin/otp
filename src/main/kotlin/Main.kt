@@ -1,3 +1,6 @@
+import java.net.URI
+import java.util.*
+
 fun main(args : Array<String>) {
     val a: OTPAlgorithm  = OTPAlgorithm.getMD5()
     val b: OTPAlgorithm  = OTPAlgorithm.getMD5()
@@ -20,4 +23,5 @@ fun main(args : Array<String>) {
     println(totp)
     println(totp.generate())
     println(totp.countDown())
+    println(TOTP.fromURI(URI("otpauth://totp/ejisan?digits=6&period=30&algorithm=SHA1&secret=QPXVYHN67PRWGKOP7FBCIHBTGGDW2WIX&issuer")).toURI("ejisan", Optional.of("qwedas")))
 }
